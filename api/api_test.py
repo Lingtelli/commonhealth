@@ -43,13 +43,12 @@ def filterClusters(cluster_list, query_words):
             score += content_score
 
         if len(keywords) == 0:
-            print('append cluster', cluster['clusterid'])
+            #print('append cluster', cluster['clusterid'])
             matched.append((cluster, score))
      
     sorted_matched = sorted(matched, key=itemgetter(1), reverse=True)
     sorted_matched = [j[0] for j in sorted_matched]
     return sorted_matched
-    #return json.dumps(sorted_matched, ensure_ascii=False)
 
 def isQualified(member, center, author, start, end, source):
     if ((center is not None) and (center not in member['_centers'])):
@@ -58,12 +57,15 @@ def isQualified(member, center, author, start, end, source):
         return False
     if ((source is not None) and (source != member['source'])):
         return False
-    if ((start is not None) and (end is not None)):
-        date = ''.join(member['date'].split('-'))
+    
+    date = ''.join(member['publish_date'].split('-'))
+    if start is not None:
         start = ''.join(start.split('-'))
+        if datetime.strptime(date, "%Y%m%d").date() < datetime.strptime(start, "%Y%m%d").date():
+            return False 
+    if end is not None:
         end = ''.join(end.split('-'))
-        if ((datetime.strptime(date, "%Y%m%d").date() < datetime.strptime(start, "%Y%m%d").date()) or 
-                (datetime.strptime(date, "%Y%m%d").date() > datetime.strptime(end, "%Y%m%d").date())):
+        if datetime.strptime(date, "%Y%m%d").date() > datetime.strptime(end, "%Y%m%d").date():
             return False
     return True
     
@@ -125,10 +127,6 @@ def commonhealth_api():
     matched_clusters = countCenterSize(matched_clusters)
 
     return json.dumps(matched_clusters, ensure_ascii=False)
-
-# not working if put it here
-#data = open('cluster_result0.json', encoding='utf-8') 
-#cluster_list = json.load(data)
 
 
 if __name__ == '__main__':

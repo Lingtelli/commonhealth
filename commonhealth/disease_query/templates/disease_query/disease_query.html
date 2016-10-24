@@ -28,11 +28,6 @@
          <form name="query_input">
             <h4>康健文章查詢測試版 
                <input type="text" ng-model="query_words" class="text-muted" placeholder="請輸入關鍵字" style="width: 300px">
-               <!--
-               進階查詢
-               <input type="text" ng-model="author" class="text-muted" placeholder="作者" style="width: 100px">
-               <input type="text" ng-model="article_source" class="text-muted" placeholder="文章出處" style="width: 200px">
-               -->
                <button ng-click="query(query_words)">搜尋</button>
             </h4>
          </form>
@@ -43,37 +38,10 @@
    <div class="row" style="margin-left: 5px">
       <div class="paragraph-container" ng-controller="PageController as pageCtrl">
          
-         <!--
-         <div class="col-xs-2 col-sm-2 col-md-2 bg-info" style="border: 1px solid #eeeeee; border-radius: 2px;">
-            <div class="type-container" ng-controller="TypeController as typeCtrl">
-
-               <div ng-show="start_date != null">
-                  
-                  <h5>出版日期</h5>
-                  <input type="text" id="daterange" name="daterange" value="" style="width: 167px"></input>
-                  <br><br>
-
-                  <p class="text-muted" ng-show="results.length >= 0" style="margin-top: 5px;">共有{{ info_sidebar.length }}個群組</p>
-
-                  <div ng-repeat="info in info_sidebar">
-                     <a data-toggle="collapse" data-parent="#accordion" href="#{{info.clusterid}}sidebar">{{info.keyword}} ( {{info.size}} )</a>
-                     <div id="{{info.clusterid}}sidebar" class="panel-collapse collapse">
-                        <h4 id="{{center}}" class="panel-body" ng-repeat="center in info.centers" ng-click="generateQueryResults()">{{ center }}</h4>
-                     </div>
-                  </div>
-
-                  <input type="submit" value="確認" ng-click="generateQueryResults()"></input>
-               </div>
-
-            </div>
-         </div>
-         -->
-
-
          <div class="col-xs-10 col-sm-10 col-md-10" style="border: 1px solid #eeeeee; border-radius: 2px;"> 
             <div class="container col-xs-12 col-sm-12 col-md-12">
                <div class="type-container" ng-controller="TypeController as typeCtrl">
-                  <p class="text-muted" ng-show="results.length >= 0" style="margin-top: 5px;">共有{{ results.length }}筆結果</p>
+                  <p class="text-muted" ng-show="results != null" style="margin-top: 5px;">共有{{ results.length }}筆結果</p>
                   <div class="panel-group" id="accordion">
                      <div ng-repeat="info in filtered_results">
                         <div class="panel panel-default">
@@ -116,25 +84,11 @@
       
       <div class="type-container" ng-controller="TypeController as typeCtrl">
          <div ng-show="start_date != null" class="col-xs-2 col-sm-2 col-md-2 bg-info">
-            <div id="export_container"></div>
+            <button id="export_container" ng-click="exportJSON()">匯出JSON</button>
                         
             <h5>出版日期</h5>
             <input type="text" id="daterange" name="daterange" value="" style="width: 190px"></input>
-            <!-- 
-            <h5>★篩選標籤</h5>
-            <div ng-repeat="type in types">
-               <ul ng-class="{ active: typeCtrl.isSelected(type) }">
-                  <input type="checkbox" ng-click="typeCtrl.selectType(type)" checked="checked">{{ type }}</input>
-               </ul>
-            </div>
-            
-            <h5>★作者</h5>
-            <div ng-repeat="author in authors">
-               <ul ng-class="{ active: typeCtrl.isSelected(author) }">
-                  <input type="checkbox" ng-click="typeCtrl.selectType(author)" checked="checked">{{ author }}</input>
-               </ul>
-            </div>
-            -->
+
             <div>
                <input type="text" ng-model="author" class="text-muted" placeholder="作者" style="width: 190px">
             </div>
@@ -142,34 +96,21 @@
                <input type="text" ng-model="article_source" class="text-muted" placeholder="文章出處" style="width: 190px">
             </div>
 
-
-
             <p class="text-muted" ng-show="results.length >= 0" style="margin-top: 5px;">共有{{ info_sidebar.length }}個群組</p>
 
-            <div ng-repeat="info in info_sidebar">
+            <div ng-repeat="info in info_sidebar | limitTo:totalDisplayed">
                <a data-toggle="collapse" data-parent="#accordion" href="#{{info.clusterid}}sidebar">{{info.keyword}} ( {{info.size}} )</a>
                <div id="{{info.clusterid}}sidebar" class="panel-collapse collapse">
-                  <!--
-                  <div ng-repeat="center in info.centers">
-                     <input value="{{center}}_{{info.clusterid}}" class="panel-body" name="selected_center" type="radio">{{ center }} {{}}</input>
-                  </div>
-                  -->
-
-
                   
                   <div ng-repeat="(key, value) in info.each_center_count">
                      <input value="{{key}}_{{info.clusterid}}" class="panel-body" name="selected_center" type="radio">{{key}} ( {{value}} )</input>
                   </div>
 
-
-
-
-                  <!--
-                  <h4 id="{{center}}" class="panel-body" ng-repeat="center in info.centers" ng-click="generateQueryResults()">{{ center }}</h4>
-                  -->
                </div>
             </div>
-            <input type="submit" value="確認" ng-click="generateQueryResults(author, article_source)"></input>
+            <button class="button" ng-click="loadMore()">更多</button>
+            <br>
+            <input type="submit" value="加入條件" ng-click="generateQueryResults(author, article_source)"></input>
          </div>
       </div>
       

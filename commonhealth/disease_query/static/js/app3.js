@@ -9,11 +9,7 @@
          $scope.query_article_source = null;
          $scope.query_keyword = null;
          $scope.query_clusterid = null;
-         //$scope.start_date = null;
-         //$scope.end_date = null;
 
-         //console.log('len author:', $scope.query_author.length, ' len source: ', $scope.query_article_source.length);
-         //console.log('query: ', $scope.query_words, 'author:', $scope.query_author, 'source: ', $scope.query_article_source);
          Data.setInputDisease(query_words, first_time=true);
       };
    }]);
@@ -22,7 +18,7 @@
     *    In charge of type selection and generate the query result
     * *************************************************************/
    app.controller("TypeController", function($scope, Data) {
-
+      $scope.results = null;
       this.selectType = function(_type) {
          if (! this.isSelected(_type)) {
             var idx = $scope.deselected_types.indexOf(_type);
@@ -123,19 +119,32 @@
          Data.setInputDisease($scope.query_words, false, $scope.query_author, $scope.query_article_source, selected_clusterid, selected_center, $scope.start_date, $scope.end_date);
       };
       
+      $scope.exportJSON = function() {
+         var json_data = new Blob([JSON.stringify($scope.results)], { type: 'text/json' });
+         var link = document.createElement("a");
+         link.setAttribute("href", window.URL.createObjectURL(json_data));
+         link.setAttribute("download", "query_result.json");
+         document.body.appendChild(link);
+         link.click();
+      
+      };
+
       // watch for new disease input
       $scope.$watch( function() {return Data.getInputDisease(); }, function(newVal, oldVal) {
          if (newVal != oldVal) {
             $scope.results = Array.from(newVal);
-            var json_data = "text/json; charset=utf-8," + encodeURIComponent(JSON.stringify($scope.results));
-            $("#export_container").html('<a href="data:' + json_data + '" download="query_result.json">匯出JSON</a>');
             if (Data.isFirstQuery()) {
                $scope.info_sidebar = newVal;
                $scope.info_sidebar = Array.from($scope.info_sidebar);
+               $scope.totalDisplayed = 10;
                initialTypes(newVal);
             }
          }
       });
+
+      $scope.loadMore = function() {
+         $scope.totalDisplayed += 10;
+      };
 
       // watch for new $scope.result
       $scope.$watch('results', function(newVal, oldVal) {
@@ -170,16 +179,6 @@
    });
 
    app.controller('ModalController', function($scope, $modal, $log) {
-      /*
-      $scope.content = [
-         {
-            'age': 31
-         },
-         {
-            'age': 32
-         }
-      ];      
-      */
       $scope.open = function(info) {
          console.log(info);
          var modalInstance = $modal.open({
@@ -195,8 +194,6 @@
    });
 
    app.controller('ModalInstanceController', function($scope, $modalInstance, info) {
-      console.log(info.clusterid);
-      //$scope.clusterid = info.clusterid;
       $scope.content = info.content;
 
       $scope.ok = function() {
@@ -262,11 +259,9 @@
          },
          getPageData: function() {
             return results;
-            //return data.result_list;
          },
          setPageData: function(_results) {
             results = _results;
-            //data.result_list = _data;
          }
       }
    }]);
