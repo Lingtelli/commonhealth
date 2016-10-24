@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html ng-app="query-system">
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.js"></script>
+        <script type="text/javascript" src="app.js"></script>
+        <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>  
+    </head>
+    <body class="list-group" ng-controller="SystemController as systemCtrl">
+        <form name="queryInput">
+            <input type="text">
+            <input type="submit" value="Query">
+        </form>
+
+        <section class="tab" ng-controller="TabController as tabCtrl">
+            <ul class="nav nav-pills">
+                <div ng-repeat="(tag, list) in systemCtrl.disease_info">
+                    <li ng-class="{ active: tabCtrl.isSelected(tag) }">
+                        <input type="checkbox" ng-click="tabCtrl.selectTab(tag)">{{ tag }}</input>
+                    </li>
+                </div>
+                <div>
+                    <input type="submit" value="GO" ng-click="tabCtrl.showResult()">
+                </div>
+                <!--
+                <li ng-class="{ active: tabCtrl.isSelected(1) }">
+                    <a href ng-click="tabCtrl.selectTab(1)">Symptom</a>
+                </li>
+                <li ng-class="{ active: tabCtrl.isSelected(2) }">
+                    <a href ng-click="tabCtrl.selectTab(2)">Cause</a>
+                </li>
+                -->
+            </ul> 
+            <div ng-repeat="(idx, info) in tabCtrl.result_list">
+                <h4>{{ info['title'] }}</h4>
+                <h6>{{ info['snippet'] }}</h6>
+            </div>
+            <!--
+            <div ng-show="tabCtrl.isSelected(1)">
+                <div ng-repeat="paragraph in systemCtrl.disease_info[0].paragraph_list">
+                    <h4> {{ paragraph }} </h4>
+                </div>
+            </div>
+            <div ng-show="tabCtrl.isSelected(2)">
+                <div ng-repeat="paragraph in systemCtrl.disease_info[1].paragraph_list">
+                    <h4> {{ paragraph }} </h4>
+                </div>
+            </div>
+            -->
+        </section>
+        <script>
+            
+        </script>
+    </body>
+</html>

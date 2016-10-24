@@ -1,0 +1,11 @@
+
+.result-container {
+    position: absolute;
+    left: 0px;
+    background-color: linen;
+}
+.tab-container {
+    position: absolute;
+    right: 0px;
+    background-color: skyblue;
+}
