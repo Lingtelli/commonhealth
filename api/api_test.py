@@ -108,7 +108,7 @@ def commonhealth_api():
             query_dict[key] = None
     
     #print(query_dict)
-    data = open('test.json', encoding='utf-8')
+    data = open('test_big.json', encoding='utf-8')
     #data = open('cluster_result0.json', encoding='utf-8') 
     cluster_list = json.load(data)
 

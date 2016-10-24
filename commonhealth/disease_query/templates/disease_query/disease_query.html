@@ -88,7 +88,7 @@
                               <div class="panel-body" ng-repeat=" member in info.member">{{ member.content.slice(0,100) }}
                                  <br>
                                  <br>
-                                 <div style="margin-right: 10%">出版日期：{{member['date']}}，作者：{{member['author']}}，文章出處：{{member['source']}}</div>
+                                 <div style="margin-right: 10%">出版日期：{{member['publish_date']}}，作者：{{member['author']}}，文章出處：{{member['source']}}</div>
                                  <div style="margin-left: 70%">標籤：
                                     <span ng-repeat="_center in member['_centers']" style="margin: 0 auto">{{ _center }} </span>
                                     <button class="btn btn-primary" type="button" ng-controller="ModalController as modalCtrl" ng-click="open(member)" style="float: right">快速檢視</button>

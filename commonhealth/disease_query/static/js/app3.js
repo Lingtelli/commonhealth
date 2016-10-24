@@ -41,7 +41,7 @@
       function initialTypes(_disease_clusters) {
          var centers = [];
          var _centers = [];
-         var dates = [];
+         var publish_dates = [];
          var clusterids = [];
          var authors = [];
 
@@ -55,7 +55,7 @@
                _centers = _centers.concat(cluster['member'][jdx]['_centers']);
 
             for (var jdx in cluster['member'])
-               dates.push(cluster['member'][jdx]['date'])
+               publish_dates.push(cluster['member'][jdx]['publish_date'])
 
             for (var jdx in cluster['member'])
                authors.push(cluster['member'][jdx]['author'])
@@ -65,10 +65,10 @@
          $scope.types = Array.from(new Set(_centers));
          $scope.deselected_types = [];
 
-         var earliest_date = dates.reduce(function (pre, cur) {
+         var earliest_date = publish_dates.reduce(function (pre, cur) {
             return Date.parse(pre) > Date.parse(cur) ? cur : pre;
          });
-         var latest_date = dates.reduce(function (pre, cur) {
+         var latest_date = publish_dates.reduce(function (pre, cur) {
             return Date.parse(pre) < Date.parse(cur) ? cur : pre;
          });
 
