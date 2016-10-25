@@ -136,14 +136,14 @@
             if (Data.isFirstQuery()) {
                $scope.info_sidebar = newVal;
                $scope.info_sidebar = Array.from($scope.info_sidebar);
-               $scope.totalDisplayed = 10;
+               $scope.totalDisplayed = 5;
                initialTypes(newVal);
             }
          }
       });
 
       $scope.loadMore = function() {
-         $scope.totalDisplayed += 10;
+         $scope.totalDisplayed += 5;
       };
 
       // watch for new $scope.result
@@ -223,14 +223,17 @@
                end = msToDate(end);
             }
             query_str = '';
-            query = query.split(' ');
-            query_len = query.length;
-            for (var idx = 0; idx < query_len; idx++)
-               if (idx < query_len -1)
-                  query_str += ('query=' + encodeURIComponent(query[idx]) + '&');
-               else
-                  query_str += ('query=' + encodeURIComponent(query[idx]));
-            
+            if (query != null) {
+               query = query.split(' ');
+               query_len = query.length;
+               for (var idx = 0; idx < query_len; idx++)
+                  if (idx < query_len -1)
+                     query_str += ('query=' + encodeURIComponent(query[idx]) + '&');
+                  else
+                     query_str += ('query=' + encodeURIComponent(query[idx]));
+            }else {
+               query_str += ('query=' + encodeURIComponent(' '));
+            }
             if ((author != null) && (author.length > 0) ) 
                query_str += ('&author=' + encodeURIComponent(author));
             if (article_source != null && (article_source.length > 0)) 

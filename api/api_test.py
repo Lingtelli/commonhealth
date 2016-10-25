@@ -29,6 +29,9 @@ def calculateScore(keywords, target, bonus):
 
 def filterClusters(cluster_list, query_words):
     matched = []
+    if ' ' in query_words:
+        return cluster_list
+
     for cluster in cluster_list:
         keywords = query_words[:]
         center_score, keywords = calculateScore(keywords, ''.join(cluster['centers']), 30)
@@ -47,7 +50,7 @@ def filterClusters(cluster_list, query_words):
             matched.append((cluster, score))
      
     sorted_matched = sorted(matched, key=itemgetter(1), reverse=True)
-    sorted_matched = [j[0] for j in sorted_matched]
+    sorted_matched = [x[0] for x in sorted_matched]
     return sorted_matched
 
 def isQualified(member, center, author, start, end, source):
