@@ -48,7 +48,7 @@
                            <div class="panel-heading">
                               <h4 class="panel-title">
                                  <div>
-                                    <a data-toggle="collapse" data-parent="#accordion" href="#{{info.clusterid}}">{{ info.keyword }}：{{ info.member[0]['content'].slice(0,45)}}...</a>
+                                    <a data-toggle="collapse" data-parent="#accordion" href="#{{info.clusterid}}">{{ info.keyword }}：{{ info.member[0]['content'].slice(0,60)}}...</a>
                                  </div>
                               </h4>
                            </div>
@@ -90,10 +90,10 @@
             <input type="text" id="daterange" name="daterange" value="" style="width: 190px"></input>
 
             <div>
-               <input type="text" ng-model="author" class="text-muted" placeholder="作者" style="width: 190px">
+               <input id="author_input" type="text" ng-model="author" class="text-muted" placeholder="作者" style="width: 190px">
             </div>
             <div>
-               <input type="text" ng-model="article_source" class="text-muted" placeholder="文章出處" style="width: 190px">
+               <input id="source_input" type="text" ng-model="article_source" class="text-muted" placeholder="文章出處" style="width: 190px">
             </div>
 
             <p class="text-muted" ng-show="results.length >= 0" style="margin-top: 5px;">共有{{ info_sidebar.length }}個群組</p>
@@ -102,9 +102,18 @@
                <a data-toggle="collapse" data-parent="#accordion" href="#{{info.clusterid}}sidebar">{{info.keyword}} ( {{info.size}} )</a>
                <div id="{{info.clusterid}}sidebar" class="panel-collapse collapse">
                   
+                  <!--
+                  original version
                   <div ng-repeat="(key, value) in info.each_center_count">
                      <input value="{{key}}_{{info.clusterid}}" class="panel-body" name="selected_center" type="radio">{{key}} ( {{value}} )</input>
                   </div>
+                  -->
+
+
+                  <div ng-repeat="(key, value) in info.each_center_count">
+                     <input value="{{info.keyword}}_{{key}}" class="panel-body" name="selected_center" type="checkbox">{{key}} ( {{value}} )</input>
+                  </div>
+
 
                </div>
             </div>

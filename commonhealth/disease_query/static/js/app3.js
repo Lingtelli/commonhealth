@@ -91,7 +91,6 @@
             $scope.end_date = Date.parse(picker.endDate.format('YYYY-MM-DD'));
          });
 
-
          $scope.start_date = Date.parse(earliest_date);
          $scope.end_date = Date.parse(latest_date);
       };
@@ -101,6 +100,18 @@
       };
 
       $scope.generateQueryResults = function(author=null, article_source=null) {
+
+         var selected_groups = $("input[name='selected_center']:checked");
+         if (selected_groups != null) {
+            var groups = [];
+            for (var idx = 0; idx < selected_groups.length; ++idx) {
+               groups.push(selected_groups[idx].value);
+            }
+         }
+         selected_clusterid = null; 
+         selected_center = null; 
+         
+         /*
          var selected_group = $("input[name='selected_center']:checked").val();  // get 'value' attribute
          if (selected_group != null) {
             console.log(selected_group);
@@ -111,12 +122,15 @@
             selected_center = null;
             selected_clusterid = null; 
          }
+         */
+
+
          $scope.query_author = author;
          $scope.query_article_source = article_source;
 
-         console.log('query: ', $scope.query_words, 'author:', $scope.query_author, 'source: ', $scope.query_article_source);
+         console.log('query: ', $scope.query_words, 'author:', $scope.query_author, 'source: ', $scope.query_article_source, 'group: ', groups);
          console.log('start: ', $scope.start_date, 'end: ', $scope.end_date, 'center: ', selected_center, 'clusterid: ', selected_clusterid);
-         Data.setInputDisease($scope.query_words, false, $scope.query_author, $scope.query_article_source, selected_clusterid, selected_center, $scope.start_date, $scope.end_date);
+         Data.setInputDisease($scope.query_words, false, $scope.query_author, $scope.query_article_source, selected_clusterid, selected_center, $scope.start_date, $scope.end_date, groups);
       };
       
       $scope.exportJSON = function() {
@@ -134,6 +148,8 @@
          if (newVal != oldVal) {
             $scope.results = Array.from(newVal);
             if (Data.isFirstQuery()) {
+               $('#source_input').val('');
+               $('#author_input').val('');
                $scope.info_sidebar = newVal;
                $scope.info_sidebar = Array.from($scope.info_sidebar);
                $scope.totalDisplayed = 5;
@@ -217,7 +233,7 @@
          getInputDisease: function() {
             return query_resp;
          },
-         setInputDisease: function(query, first_time=false, author=null, article_source=null, clusterid=null, center=null, start=null, end=null) {
+         setInputDisease: function(query, first_time=false, author=null, article_source=null, clusterid=null, center=null, start=null, end=null, groups=null) {
             if (start != null) {
                start = msToDate(start);
                end = msToDate(end);
@@ -246,6 +262,11 @@
                query_str += ('&end=' + encodeURIComponent(end));
             if (clusterid != null)
                query_str += ('&clusterid=' + encodeURIComponent(clusterid));
+            if (groups != null) {
+               group_size = groups.length;
+               for (var idx = 0; idx < group_size; idx++)
+                  query_str += ('&group=' + encodeURIComponent(groups[idx]));   
+            }
             
              
             console.log(query_str);
