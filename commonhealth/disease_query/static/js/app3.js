@@ -99,7 +99,7 @@
          return content.slice(0, 5);
       };
 
-      $scope.generateQueryResults = function(author=null, article_source=null) {
+      $scope.generateQueryResults = function() {
 
          var selected_groups = $("input[name='selected_center']:checked");
          if (selected_groups != null) {
@@ -124,10 +124,6 @@
          }
          */
 
-
-         $scope.query_author = author;
-         $scope.query_article_source = article_source;
-
          console.log('query: ', $scope.query_words, 'author:', $scope.query_author, 'source: ', $scope.query_article_source, 'group: ', groups);
          console.log('start: ', $scope.start_date, 'end: ', $scope.end_date, 'center: ', selected_center, 'clusterid: ', selected_clusterid);
          Data.setInputDisease($scope.query_words, false, $scope.query_author, $scope.query_article_source, selected_clusterid, selected_center, $scope.start_date, $scope.end_date, groups);
@@ -140,7 +136,6 @@
          link.setAttribute("download", "query_result.json");
          document.body.appendChild(link);
          link.click();
-      
       };
 
       // watch for new disease input
@@ -150,6 +145,10 @@
             if (Data.isFirstQuery()) {
                $('#source_input').val('');
                $('#author_input').val('');
+               $('#source_input').html('');
+               $('#author_input').html('');
+               $scope.query_author = null;
+               $scope.query_article_source = null;
                $scope.info_sidebar = newVal;
                $scope.info_sidebar = Array.from($scope.info_sidebar);
                $scope.totalDisplayed = 5;

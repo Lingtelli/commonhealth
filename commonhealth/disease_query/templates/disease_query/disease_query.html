@@ -90,10 +90,10 @@
             <input type="text" id="daterange" name="daterange" value="" style="width: 190px"></input>
 
             <div>
-               <input id="author_input" type="text" ng-model="author" class="text-muted" placeholder="作者" style="width: 190px">
+               <input id="author_input" type="text" ng-model="query_author" class="text-muted" placeholder="作者" style="width: 190px">
             </div>
             <div>
-               <input id="source_input" type="text" ng-model="article_source" class="text-muted" placeholder="文章出處" style="width: 190px">
+               <input id="source_input" type="text" ng-model="query_article_source" class="text-muted" placeholder="文章出處" style="width: 190px">
             </div>
 
             <p class="text-muted" ng-show="results.length >= 0" style="margin-top: 5px;">共有{{ info_sidebar.length }}個群組</p>
@@ -120,7 +120,7 @@
             <button class="button" ng-click="loadMore()">看更多</button>
             <br>
             <hr>
-            <input type="submit" value="加入條件" ng-click="generateQueryResults(author, article_source)"></input>
+            <input type="submit" value="加入條件" ng-click="generateQueryResults()"></input>
          </div>
       </div>
       
