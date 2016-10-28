@@ -172,7 +172,7 @@
    app.controller('PageController', function($scope, Data) {
       $scope.currentPage = 1;
       $scope.numPerPage = 10;
-      $scope.maxSize = 30;                // max selectable page
+      $scope.maxSize = 25;                // max selectable page
       $scope.filtered_results = [];       // results will be shown in a page
       $scope.results = [];
 
@@ -278,6 +278,7 @@
             function successCallback(resp) {
                query_resp = resp.data;
                is_first_query = first_time;
+               console.log('resp received, reindering...');
             }
          },
          getPageData: function() {
