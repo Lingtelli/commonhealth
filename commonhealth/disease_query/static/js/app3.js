@@ -3,14 +3,18 @@
 
    app.controller('SystemController', ['$scope', 'Data', function($scope, Data) {
 
+      //$scope.query = function(query_words, author='', article_source='') {
       $scope.query = function(query_words, author='', article_source='') {
+         /*
          $scope.query_words = query_words;
          $scope.query_author = null;
          $scope.query_article_source = null;
          $scope.query_keyword = null;
          $scope.query_clusterid = null;
-
-         Data.setInputDisease(query_words, first_time=true);
+         */
+         Data.setCurrentPage(1);
+         Data.setQuerySetting(query_words, true, null, null, null, null, null);
+         Data.getApiData();
       };
    }]);
 
@@ -99,6 +103,11 @@
          return content.slice(0, 5);
       };
 
+      $scope.lookupCluster = function(clusterid) {
+         console.log($scope.start_date, $scope.end_date, $('#author_input').val(), $('#source_input').val());
+         //Data.getDetail(clusterid, $scope.start_date, $scope.end_date);
+      }
+
       $scope.generateQueryResults = function() {
 
          var selected_groups = $("input[name='selected_center']:checked");
@@ -108,10 +117,10 @@
                groups.push(selected_groups[idx].value);
             }
          }
+         /*
          selected_clusterid = null; 
          selected_center = null; 
-         
-         /*
+      
          var selected_group = $("input[name='selected_center']:checked").val();  // get 'value' attribute
          if (selected_group != null) {
             console.log(selected_group);
@@ -123,10 +132,15 @@
             selected_clusterid = null; 
          }
          */
-
          console.log('query: ', $scope.query_words, 'author:', $scope.query_author, 'source: ', $scope.query_article_source, 'group: ', groups);
-         console.log('start: ', $scope.start_date, 'end: ', $scope.end_date, 'center: ', selected_center, 'clusterid: ', selected_clusterid);
-         Data.setInputDisease($scope.query_words, false, $scope.query_author, $scope.query_article_source, selected_clusterid, selected_center, $scope.start_date, $scope.end_date, groups);
+         console.log('start: ', $scope.start_date, 'end: ', $scope.end_date);
+         
+         Data.setCurrentPage(1);
+         // words, first_time, author, source, date_start, date_end, groups
+         Data.setQuerySetting($scope.query_words, false, $scope.query_author, $scope.query_article_source, $scope.start_date, $scope.end_date, groups);
+         Data.getQuerySetting();
+         //Data.setInputDisease($scope.query_words, false, $scope.query_author, $scope.query_article_source, selected_clusterid, selected_center, $scope.start_date, $scope.end_date, groups);
+         Data.getApiData();
       };
       
       $scope.exportJSON = function() {
@@ -156,6 +170,13 @@
             }
          }
       });
+      /*
+      $scope.$watch( function() {return Data.getDetailInfo();}, function(newVal, oldVal) {
+         if (newVal != oldVal) {
+            $scope.detail = newVal;
+         }
+      });
+      */
 
       $scope.loadMore = function() {
          $scope.totalDisplayed += 5;
@@ -172,19 +193,28 @@
    app.controller('PageController', function($scope, Data) {
       $scope.currentPage = 1;
       $scope.numPerPage = 10;
-      $scope.maxSize = 25;                // max selectable page
+      $scope.maxSize = 20;                // max selectable page
       $scope.filtered_results = [];       // results will be shown in a page
       $scope.results = [];
 
       $scope.$watch( function() { return Data.getPageData(); }, function(newVal, oldVal) {
          if (newVal != oldVal ) {
             $scope.results = newVal;
-            $scope.currentPage = 1;
+            $scope.currentPage = Data.getCurrentPage();
             updateFilteredItems();
          }
       });
+      
+      //$scope.$watch('currentPage + numPerPage', updateFilteredItems);
+      $scope.$watch('currentPage + numPerPage', nextPageQuery);
 
-      $scope.$watch('currentPage + numPerPage', updateFilteredItems);
+      function nextPageQuery() {
+         Data.setCurrentPage($scope.currentPage);
+         console.log(Data.getCurrentPage());
+         Data.getApiData();
+         //updateFilteredItems(); 
+      }
+      
 
       function updateFilteredItems() {
          var begin = (($scope.currentPage - 1) * $scope.numPerPage);
@@ -222,8 +252,18 @@
       };
 
       var query_resp = '';
-      var is_first_query = true;
+      var is_first_query = null;
       var results = [];
+      var detail = [];
+
+      var words = [];
+      var source = null;
+      var author = null;
+      var date_start = null;
+      var date_end = null;
+      var groups = null;
+      var page_start = 1;
+      var query_string = '';
 
       return {
          isFirstQuery: function() {
@@ -232,60 +272,104 @@
          getInputDisease: function() {
             return query_resp;
          },
-         setInputDisease: function(query, first_time=false, author=null, article_source=null, clusterid=null, center=null, start=null, end=null, groups=null) {
-            if (start != null) {
-               start = msToDate(start);
-               end = msToDate(end);
+         setQuerySetting: function(_words, _first_time=false, _author=null, _source=null, _date_start=null, _date_end=null, _groups=null) {
+            
+            query_string = '';
+            words = _words;
+            is_first_query = _first_time;
+            source = _source;
+            author = _author;
+            date_start = _date_start;
+            date_end = _date_end;
+            groups = _groups;
+
+            if (_date_start != null) {
+               date_start = msToDate(_date_start);
+               date_end = msToDate(_date_end);
             }
-            query_str = '';
-            if (query != null) {
-               query = query.split(' ');
-               query_len = query.length;
+            
+            if (words != null) {
+               words = words.split(' ');
+               query_len = words.length;
                for (var idx = 0; idx < query_len; idx++)
                   if (idx < query_len -1)
-                     query_str += ('query=' + encodeURIComponent(query[idx]) + '&');
+                     query_string += ('query=' + encodeURIComponent(words[idx]) + '&');
                   else
-                     query_str += ('query=' + encodeURIComponent(query[idx]));
+                     query_string += ('query=' + encodeURIComponent(words[idx]));
             }else {
-               query_str += ('query=' + encodeURIComponent(' '));
+               query_string += ('query=' + encodeURIComponent(' '));
             }
             if ((author != null) && (author.length > 0) ) 
-               query_str += ('&author=' + encodeURIComponent(author));
-            if (article_source != null && (article_source.length > 0)) 
-               query_str += ('&source=' + encodeURIComponent(article_source));
-            if (center != null) 
-               query_str += ('&center=' + encodeURIComponent(center));
-            if (start != null) 
-               query_str += ('&start=' + encodeURIComponent(start));
-            if (end != null)
-               query_str += ('&end=' + encodeURIComponent(end));
-            if (clusterid != null)
-               query_str += ('&clusterid=' + encodeURIComponent(clusterid));
+               query_string += ('&author=' + encodeURIComponent(author));
+            if (source != null && (source.length > 0)) 
+               query_string += ('&source=' + encodeURIComponent(source));
+            //if (center != null) 
+            //   query_string += ('&center=' + encodeURIComponent(center));
+            if (date_start != null) 
+               query_string += ('&date_start=' + encodeURIComponent(date_start));
+            if (date_end != null)
+               query_string += ('&date_end=' + encodeURIComponent(date_end));
+            //if (clusterid != null)
+            //   query_string += ('&clusterid=' + encodeURIComponent(clusterid));
             if (groups != null) {
                group_size = groups.length;
                for (var idx = 0; idx < group_size; idx++)
-                  query_str += ('&group=' + encodeURIComponent(groups[idx]));   
+                  query_string += ('&groups=' + encodeURIComponent(groups[idx]));   
             }
-            
-             
-            console.log(query_str);
+         },
+         getApiData: function () {
+            if (is_first_query == null)
+               return 
+            console.log(page_start);
+            var temp_query_string = query_string;
+            if (page_start != null)
+               temp_query_string = temp_query_string + ('&page_start=' + encodeURIComponent(page_start));
+            console.log(temp_query_string);
             $http({
                method: 'POST',
-               url: 'http://lingtelli.com:5012/commonhealth_api/?' + query_str,
+               url: 'http://lingtelli.com:5012/commonhealth_api/?' + temp_query_string,
                headers: {'Content-Type': 'application/x-www-form-encoded;charset=UTF-8'}
             }).then(successCallback);
 
             function successCallback(resp) {
                query_resp = resp.data;
-               is_first_query = first_time;
                console.log('resp received, reindering...');
-            }
+               console.log(query_resp);
+            };
          },
+         /*
+         getDetail: function(clusterid, start_date, end_date) {
+            console.log(start_date, end_date);
+            query_str = ('clusterid=' + encodeURIComponent(clusterid));
+            $http({
+               method: 'POST',
+               url: 'http://lingtelli.com:5012/getDetail/?' + query_str,
+               headers: {'Content-Type': 'application/x-www-form-encoded;charset=UTF-8'}
+            }).then(something);
+            
+            function something(resp) {
+               detail = resp.data;
+            };
+         },
+         getDetailInfo: function() {
+            return detail;
+         },
+         */
          getPageData: function() {
             return results;
          },
          setPageData: function(_results) {
             results = _results;
+         },
+         getQuerySetting: function() {
+            console.log(words, source, author, date_start, date_end, groups, page_start);   
+         },
+         setCurrentPage: function(_page) {
+            page_start = _page;
+            console.log('current page is set to: ', page_start);
+         },
+         getCurrentPage: function() {
+            return page_start;
          }
       }
    }]);

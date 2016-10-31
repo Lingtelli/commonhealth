@@ -15,9 +15,9 @@
 
 <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+
 <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
 
-<script type="text/javascript" src="/static/js/app3.js"></script>
 
 </head>
 
@@ -36,8 +36,7 @@
 
    {% verbatim %}
    <div class="row" style="margin-left: 5px">
-      <div class="paragraph-container" ng-controller="PageController as pageCtrl">
-         
+      <div class="paragraph-container" ng-controller="PageController as pageCtrl">      
          <div class="col-xs-10 col-sm-10 col-md-10" style="border: 1px solid #eeeeee; border-radius: 2px;"> 
             <div class="container col-xs-12 col-sm-12 col-md-12">
                <div class="type-container" ng-controller="TypeController as typeCtrl">
@@ -48,12 +47,16 @@
                            <div class="panel-heading">
                               <h4 class="panel-title">
                                  <div>
-                                    <a data-toggle="collapse" data-parent="#accordion" href="#{{info.clusterid}}">{{ info.keyword }}：{{ info.member[0]['content'].slice(0,60)}}...</a>
+                                    <a data-toggle="collapse" data-parent="#accordion" href="#{{info.clusterid}}" ng-click="lookupCluster(info.clusterid, start_date)">群組{{info.clusterid}}-{{ info.keyword }}：{{ info.member[0]['content'].slice(0,50)}}...</a>
                                  </div>
                               </h4>
                            </div>
                            <div id="{{info.clusterid }}" class="panel-collapse collapse">
+
+
                               <div class="panel-body" ng-repeat=" member in info.member">
+                              <!--<div class="panel-body" ng-repeat=" member in detail">-->
+                                 <!--<h4>{{ info.member[$index].title }} </h4>-->
                                  <h4>{{ member.title }} </h4>
                                  {{ member.content.slice(0,100) }}
                                  <br>
@@ -61,9 +64,10 @@
                                  <div style="margin-right: 10%">出版日期：{{member['publish_date']}}，作者：{{member['author']}}，文章出處：{{member['source']}}</div>
                                  <div style="margin-left: 70%">標籤：
                                     <span ng-repeat="_center in member['_centers']" style="margin: 0 auto">{{ _center }} </span>
-                                    <button class="btn btn-primary" type="button" ng-controller="ModalController as modalCtrl" ng-click="open(member)" style="float: right">快速檢視</button>
+                                    <button class="btn btn-primary" type="button" ng-controller="ModalController as modalCtrl" ng-click="open(member)" style="float: right">檢視全文</button>
                                  </div>
                               </div>
+
                            </div>
                         </div>
                      </div>
@@ -128,7 +132,8 @@
       <div class="modal-footer">
          <button class="btn btn-primary" ng-click="ok()">OK</button>
       </div>
-   </script>
+   </script>    
+   <script type="text/javascript" src="/static/js/app3.js"></script>
    {% endverbatim %}
 </body>
 </html>
