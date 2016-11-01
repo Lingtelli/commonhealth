@@ -125,6 +125,15 @@ def trimClusters(clusters, page_start):
     for idx, cluster in enumerate(clusters):
         if idx < mask_start or idx >= mask_end: 
             for member in cluster['member']:
+                del member['author']
+                del member['content']
+                del member['source']
+                del member['parapraph_tags']
+                del member['article_id']
+                del member['article_tag']
+                del member['url']
+                del member['_centers']
+                '''
                 member['author'] = None
                 member['content'] = None
                 member['source'] = None
@@ -134,11 +143,17 @@ def trimClusters(clusters, page_start):
                 member['url'] = None
                 member['_centers'] = None
                 member['title'] = None
+                '''
         else:
             for member in cluster['member']:
+                del member['article_id']
+                del member['parapraph_tags']
+                del member['article_tag']
+                '''
                 member['article_id'] = None
                 member['parapraph_tags'] = None
                 member['article_tag'] = None
+                '''
             
     return clusters
 
