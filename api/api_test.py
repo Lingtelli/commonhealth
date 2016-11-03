@@ -133,27 +133,11 @@ def trimClusters(clusters, page_start):
                 del member['article_tag']
                 del member['url']
                 del member['_centers']
-                '''
-                member['author'] = None
-                member['content'] = None
-                member['source'] = None
-                member['parapraph_tags'] = None
-                member['article_id'] = None
-                member['article_tag'] = None
-                member['url'] = None
-                member['_centers'] = None
-                member['title'] = None
-                '''
         else:
             for member in cluster['member']:
                 del member['article_id']
                 del member['parapraph_tags']
                 del member['article_tag']
-                '''
-                member['article_id'] = None
-                member['parapraph_tags'] = None
-                member['article_tag'] = None
-                '''
             
     return clusters
 
