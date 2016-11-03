@@ -57,7 +57,7 @@
                               <div class="panel-body" ng-repeat=" member in info.member">
                               <!--<div class="panel-body" ng-repeat=" member in detail">-->
                                  <!--<h4>{{ info.member[$index].title }} </h4>-->
-                                 <h4>{{ member.title }} </h4>
+                                 <h4>{{$index + 1}}. {{ member.title }} </h4>
                                  {{ member.content.slice(0,100) }}
                                  <br>
                                  <br>
