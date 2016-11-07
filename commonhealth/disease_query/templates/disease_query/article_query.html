@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html ng-app="query-system">
+<head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
+<link rel="stylesheet" href="/static/css/container.css">
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.js"></script>
+<script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>  
+<script data-require="angular-ui-bootstrap@0.12.1" data-semver="0.12.1" src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.12.1.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+
+
+</head>
+
+<body class="list-group" ng-controller="SystemController as systemCtrl">
+
+   <div class="row bg-primary"> 
+      <div class="col-xs-12 col-xm-12 col-md-12" style="margin-left: 20px; margin-bottom: 10px">
+         <form name="query_input">
+            <h4>康健文章查詢測試版 
+               <input type="text" ng-model="query_words" class="text-muted" placeholder="請輸入關鍵字" style="width: 300px">
+               <button ng-click="query(query_words)">搜尋</button>
+            </h4>
+         </form>
+      </div>
+   </div>
+
+   {% verbatim %}
+   <div class="row" style="margin-left: 5px">
+      <div class="paragraph-container" ng-controller="PageController as pageCtrl">      
+         <div class="col-xs-10 col-sm-10 col-md-10" style="border: 1px solid #eeeeee; border-radius: 2px;"> 
+            <div class="container col-xs-12 col-sm-12 col-md-12">
+               <div class="type-container" ng-controller="TypeController as typeCtrl">
+                  <p class="text-muted" ng-show="results != null" style="margin-top: 5px;">共有{{ results.length }}筆結果</p>
+                  <div class="panel-group" id="accordion">
+                     <div ng-repeat="info in filtered_results">
+                        <div class="panel panel-default">
+                           <div class="panel-heading">
+                              <h4 class="panel-title">
+                                 <div>
+                                    <a data-toggle="collapse" data-parent="#accordion" href="#{{info.clusterid}}" ng-click="lookupCluster(info.clusterid, start_date)">群組{{info.clusterid}}-{{ info.keyword }}：{{ info.member[0]['content'].slice(0,50)}}...</a>
+                                 </div>
+                              </h4>
+                           </div>
+                           <div id="{{info.clusterid }}" class="panel-collapse collapse">
+
+
+                              <div class="panel-body" ng-repeat=" member in info.member">
+                              <!--<div class="panel-body" ng-repeat=" member in detail">-->
+                                 <!--<h4>{{ info.member[$index].title }} </h4>-->
+                                 <h4>{{$index + 1}}. {{ member.title }} </h4>
+                                 {{ member.content.slice(0,100) }}
+                                 <br>
+                                 <br>
+                                 <div style="margin-right: 10%">出版日期：{{member['publish_date']}}，作者：{{member['author']}}，文章出處：{{member['source']}}</div>
+                                 <br>
+                                 <a class="btn btn-primary" href="http://www.commonhealth.com.tw/article/article.action?nid={{member['url']}}" target="_blank" style="float: left">前往文章</a>
+                                 <button class="btn btn-primary" type="button" ng-controller="ModalController as modalCtrl" ng-click="open(member)">完整段落</button>
+                                 <div style="margin-left: 70%">標籤：
+                                    <span ng-repeat="_center in member['_centers']" style="margin: 0 auto">{{ _center }} </span>
+                                 </div>
+                              </div>
+
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+                  <pagination 
+                  total-items="results.length" 
+                  ng-model="currentPage" 
+                  max-size="maxSize" 
+                  class="pagination-sm" 
+                  boundary-links="true"
+                  ng-show="results.length > 0">
+                  </pagination>
+            </div>
+         </div>
+      </div>
+      
+      <div class="type-container" ng-controller="TypeController as typeCtrl">
+         <div ng-show="start_date != null" class="col-xs-2 col-sm-2 col-md-2 bg-info">
+            <button id="export_container" ng-click="exportJSON()">匯出JSON</button>
+                        
+            <h5>出版日期</h5>
+            <input type="text" id="daterange" name="daterange" value="" style="width: 190px"></input>
+
+            <div>
+               <input id="author_input" type="text" ng-model="query_author" class="text-muted" placeholder="作者" style="width: 190px">
+            </div>
+            <div>
+               <input id="source_input" type="text" ng-model="query_article_source" class="text-muted" placeholder="文章出處" style="width: 190px">
+            </div>
+
+            <p class="text-muted" ng-show="results.length >= 0" style="margin-top: 5px;">共有{{ info_sidebar.length }}個群組</p>
+
+            <div ng-repeat="info in info_sidebar | limitTo:totalDisplayed">
+               <a data-toggle="collapse" data-parent="#accordion" href="#{{info.clusterid}}sidebar">群組{{info.clusterid}}: {{info.keyword}} ( {{info.size}} )</a>
+               <div id="{{info.clusterid}}sidebar" class="panel-collapse collapse">
+                  
+                  <div ng-repeat="(key, value) in info.each_center_count">
+                     <input value="{{info.keyword}}_{{key}}" class="panel-body" name="selected_center" type="checkbox">{{key}} ( {{value}} )</input>
+                  </div>
+
+
+               </div>
+            </div>
+            <button class="button" ng-click="loadMore()">看更多</button>
+            <br>
+            <hr>
+            <input type="submit" value="加入條件" ng-click="generateQueryResults()"></input>
+         </div>
+      </div>
+      
+   </div>
+
+   <script type="text/ng-template" id="modalContent.html">
+      <div class="modal-header">
+         <h3 class="modal-title">{{ title }}</h3>
+      </div>
+      <div class="modal-body">
+         {{ content }}
+      </div>
+      <div class="modal-footer">
+         <button class="btn btn-primary" ng-click="ok()">OK</button>
+      </div>
+   </script>    
+   <script type="text/javascript" src="/static/js/app3.js"></script>
+   {% endverbatim %}
+</body>
+</html>
+

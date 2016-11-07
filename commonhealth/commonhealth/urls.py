@@ -18,5 +18,6 @@ from django.contrib import admin
 
 urlpatterns = [
         url(r'disease_query/', include('disease_query.urls')),
+        url(r'article_query/', include('disease_query.urls')),
         url(r'^admin/', admin.site.urls),
 ]
