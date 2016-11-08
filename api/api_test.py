@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
+import json
+import pickle
+import itertools
 import sys, os, inspect
-from flask import Flask, request, send_from_directory
+from cluster_functions import *
+from flask import Flask, request, send_from_directory, g
 from flask_restful import Resource, Api
 from flask_cors import CORS, cross_origin
-import json
 from operator import itemgetter
 from datetime import datetime
 from collections import Counter, defaultdict
-import itertools
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -18,6 +20,7 @@ api = Api(app)
 CORS(app)
 
 VALID_PARAMS = ['query', 'clusterid', 'center', 'author', 'date_start', 'date_end', 'source', 'groups', 'page_start']
+VALID_PARAMS_NEW = ['query', 'keywords', 'author', 'publish_date', 'categories', 'batch_size', 'cluster_idx', 'most_common_size']
 
 def calculateScore(keywords, target, bonus):
     # Filtering a list based on a list of booleans
@@ -217,6 +220,36 @@ def getDetail():
         resp.append(resp_dict)
         
     return json.dumps(resp, ensure_ascii=False)
+
+
+@app.route('/query/', methods=['POST'])
+def query():
+    print(getattr(g, 'this_variable', None))
+    if request.json:                        # request from website
+        print('\nGOT REQUEST FROM CURL')
+        query_dict = request.json
+        query_keys = query_dict.keys()
+        query_words = query_dict['query']
+
+    else:                                   # request from curl
+        print('\nGOT REQUEST FROM WEBSITE')
+        query_dict = request.args.to_dict()
+        query_keys = query_dict.keys()
+        query_dict['query'] = request.args.getlist('query')
+        query_dict['keywords'] = request.args.getlist('keywords')
+        query_dict['categories'] = request.args.getlist('categories')
+        query_dict['publish_date'] = request.args.getlist('publish_date')
+
+    
+    for key in query_keys:
+        if key not in VALID_PARAMS_NEW:
+            return str(key + ' is not a valid parameter.\n')
+
+    print('QUERY DICT:', query_dict)
+  
+    df, keywords = allFieldsQuery(query_dict)
+    clusters_json = convertJSON(df, keywords)
+    return json.dumps(clusters_json, ensure_ascii=False)
 
 if __name__ == '__main__':
     app.run(host='192.168.10.116', port=5012, debug=True)

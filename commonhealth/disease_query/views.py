@@ -6,3 +6,6 @@ from django.http import HttpResponse
 # Create your views here.
 def disease_query(request):
     return render(request, 'disease_query/disease_query.html')
+
+def article_query(request):
+    return render(request, 'disease_query/article_query.html')
