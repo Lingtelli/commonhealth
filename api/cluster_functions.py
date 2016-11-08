@@ -63,8 +63,11 @@ def getConceptWords(words, threshold=0.65):
     concepts = defaultdict(list)
     for w in words:
         #print('\n\n', w, '->', end=' ')
-        most_similar = w2v_model.most_similar(w, topn=9)
-        concepts[w] = [m[0] for m in most_similar if m[1] >= threshold] + [w]
+        try:
+            most_similar = w2v_model.most_similar(w, topn=10)
+            concepts[w] = [m[0] for m in most_similar if m[1] >= threshold] + [w]
+        except:
+            continue
         #print(concepts[w])
     return concepts
 
@@ -81,7 +84,7 @@ def allFieldsQuery(q_dict):
 
     query_fields = q_dict.keys()
 
-    most_common_size = 10 if 'most_common_size' not in query_fields else q_dict['most_common_size']
+    most_common_size = 50 if 'most_common_size' not in query_fields else q_dict['most_common_size']
     top_keywords = [w[0] for w in Counter(keyword_contain_query).most_common(most_common_size)]
 
     if 'author' in query_fields:
@@ -102,7 +105,7 @@ def allFieldsQuery(q_dict):
     if 'keywords' in query_fields:
         concepts = getConceptWords(q_dict['keywords'])
     else:
-        concepts = getConceptWords(top_keywords[:10])
+        concepts = getConceptWords(top_keywords[:most_common_size])
                 
     for concept, words in concepts.items():
         print(concept, 'size:', end='')
@@ -113,12 +116,13 @@ def allFieldsQuery(q_dict):
             clusters.append(temp_df)
             keywords.append(concept)
     
+    # 目前是全部回傳，想辦法只要回傳部分，或是在convertJSON做
     cluster_idx = 0
-    batch_size = 5
+    batch_size = 10
     if 'cluster_idx' in query_fields:
-        cluster_idx = q_dict['cluster_idx']
+        cluster_idx = int(q_dict['cluster_idx'])
     if 'batch_size' in query_fields:
-        batch_size = q_dict['batch_size']
+        batch_size = int(q_dict['batch_size'])
 
     return clusters[cluster_idx: cluster_idx + batch_size], keywords[cluster_idx: cluster_idx + batch_size]
 

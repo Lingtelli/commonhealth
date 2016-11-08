@@ -10,7 +10,6 @@
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!--<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">-->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
 <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -26,7 +25,7 @@
    <div class="row bg-primary"> 
       <div class="col-xs-12 col-xm-12 col-md-12" style="margin-left: 20px; margin-bottom: 10px">
          <form name="query_input">
-            <h4>康健文章查詢測試版 
+            <h4>康健文章查詢測試版二 
                <input type="text" ng-model="query_words" class="text-muted" placeholder="請輸入關鍵字" style="width: 300px">
                <button ng-click="query(query_words)">搜尋</button>
             </h4>
@@ -47,11 +46,11 @@
                            <div class="panel-heading">
                               <h4 class="panel-title">
                                  <div>
-                                    <a data-toggle="collapse" data-parent="#accordion" href="#{{info.clusterid}}" ng-click="lookupCluster(info.clusterid, start_date)">群組{{info.clusterid}}-{{ info.keyword }}：{{ info.member[0]['content'].slice(0,50)}}...</a>
+                                    <a data-toggle="collapse" data-parent="#accordion" href="#{{info.keyword}}" ng-click="lookupCluster(info.keyword, start_date)">群組-{{info.keyword}}：{{ info.member[0]['content'].slice(0,50)}}...</a>
                                  </div>
                               </h4>
                            </div>
-                           <div id="{{info.clusterid }}" class="panel-collapse collapse">
+                           <div id="{{info.keyword }}" class="panel-collapse collapse">
 
 
                               <div class="panel-body" ng-repeat=" member in info.member">
@@ -61,12 +60,12 @@
                                  {{ member.content.slice(0,100) }}
                                  <br>
                                  <br>
-                                 <div style="margin-right: 10%">出版日期：{{member['publish_date']}}，作者：{{member['author']}}，文章出處：{{member['source']}}</div>
+                                 <div style="margin-right: 10%">出版日期：{{member['publish_date']}}，作者：{{member['author']}}，文章出處：{{member['categories']}}</div>
                                  <br>
                                  <a class="btn btn-primary" href="http://www.commonhealth.com.tw/article/article.action?nid={{member['url']}}" target="_blank" style="float: left">前往文章</a>
                                  <button class="btn btn-primary" type="button" ng-controller="ModalController as modalCtrl" ng-click="open(member)">完整段落</button>
-                                 <div style="margin-left: 70%">標籤：
-                                    <span ng-repeat="_center in member['_centers']" style="margin: 0 auto">{{ _center }} </span>
+                                 <div style="margin-left: 50%">標籤：
+                                    <span ng-repeat="k in member['keywords']" style="margin: 0 auto">{{ k }} </span>
                                  </div>
                               </div>
 
@@ -105,8 +104,8 @@
             <p class="text-muted" ng-show="results.length >= 0" style="margin-top: 5px;">共有{{ info_sidebar.length }}個群組</p>
 
             <div ng-repeat="info in info_sidebar | limitTo:totalDisplayed">
-               <a data-toggle="collapse" data-parent="#accordion" href="#{{info.clusterid}}sidebar">群組{{info.clusterid}}: {{info.keyword}} ( {{info.size}} )</a>
-               <div id="{{info.clusterid}}sidebar" class="panel-collapse collapse">
+               <a data-toggle="collapse" data-parent="#accordion" href="#{{info.keyword}}sidebar">群組: {{info.keyword}} ( {{info.size}} )</a>
+               <div id="{{info.keyword}}sidebar" class="panel-collapse collapse">
                   
                   <div ng-repeat="(key, value) in info.each_center_count">
                      <input value="{{info.keyword}}_{{key}}" class="panel-body" name="selected_center" type="checkbox">{{key}} ( {{value}} )</input>
@@ -135,7 +134,7 @@
          <button class="btn btn-primary" ng-click="ok()">OK</button>
       </div>
    </script>    
-   <script type="text/javascript" src="/static/js/app3.js"></script>
+   <script type="text/javascript" src="/static/js/query_app.js"></script>
    {% endverbatim %}
 </body>
 </html>

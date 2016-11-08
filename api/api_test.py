@@ -222,9 +222,8 @@ def getDetail():
     return json.dumps(resp, ensure_ascii=False)
 
 
-@app.route('/query/', methods=['POST'])
+@app.route('/query/', methods=['POST','GET'])
 def query():
-    print(getattr(g, 'this_variable', None))
     if request.json:                        # request from website
         print('\nGOT REQUEST FROM CURL')
         query_dict = request.json
@@ -235,10 +234,15 @@ def query():
         print('\nGOT REQUEST FROM WEBSITE')
         query_dict = request.args.to_dict()
         query_keys = query_dict.keys()
-        query_dict['query'] = request.args.getlist('query')
-        query_dict['keywords'] = request.args.getlist('keywords')
-        query_dict['categories'] = request.args.getlist('categories')
-        query_dict['publish_date'] = request.args.getlist('publish_date')
+        print('request:', request.args)
+        if 'query' in request.args:
+            query_dict['query'] = request.args.getlist('query')
+        if 'keywords' in request.args:
+            query_dict['keywords'] = request.args.getlist('keywords')
+        if 'categories' in request.args:
+            query_dict['categories'] = request.args.getlist('categories')
+        if 'publish_date' in request.args:
+            query_dict['publish_date'] = request.args.getlist('publish_date')
 
     
     for key in query_keys:
