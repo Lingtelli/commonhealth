@@ -1,5 +1,6 @@
 import re
 import json
+import operator
 import jieba
 import pandas as pd
 import numpy as np
@@ -127,6 +128,29 @@ def allFieldsQuery(q_dict):
         batch_size = int(q_dict['batch_size'])
 
     return clusters[cluster_idx: cluster_idx + batch_size], keywords[cluster_idx: cluster_idx + batch_size]
+
+def rankClusters(clusters, keywords, words):
+    score_dict = dict()
+    words = '|'.join(words)
+    # compare keywords_str field first
+    for idx, c in enumerate(clusters):
+        # 可能需要先只留下同樣的文章？
+        num_rows_keywords_contain_words = c.keywords_str.str.contains(words, na=False).sum()
+        num_rows_content_contain_words = c.comment_no_punc.str.contains(words, na=False).sum()
+         
+        score = num_rows_keywords_contain_words * 100 + 2 * num_rows_content_contain_words
+        score_dict[idx] = score
+        #print(keywords[idx], '->', score)
+        # sort paragraph order
+    
+    ranking = sorted(score_dict.items(), key=operator.itemgetter(1), reverse=True)
+    ranking = [x[0] for x in ranking]
+    
+    sorted_keywords  = [keywords[idx] for idx in ranking]
+    sorted_clusters  = [clusters[idx] for idx in ranking]
+    
+    #print(sorted_keywords)
+    return sorted_clusters, sorted_keywords
 
 
 def convertJSON(df_list, keywords, q_dict):

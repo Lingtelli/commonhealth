@@ -126,8 +126,9 @@ def query():
 
     print('QUERY DICT:', query_dict)
   
-    df, keywords = allFieldsQuery(query_dict)
-    clusters_json = convertJSON(df, keywords, query_dict)
+    clusters, keywords = allFieldsQuery(query_dict)
+    sorted_clusters, sorted_keywords = rankClusters(clusters, keywords, query_dict['query'])
+    clusters_json = convertJSON(sorted_clusters, sorted_keywords, query_dict)
     return json.dumps(clusters_json, ensure_ascii=False)
 
 if __name__ == '__main__':
