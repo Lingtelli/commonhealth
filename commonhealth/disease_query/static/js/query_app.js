@@ -1,5 +1,5 @@
 (function() {
-   var app = angular.module('query-system', ['ui.bootstrap']);
+   var app = angular.module('query-system', ['ui.bootstrap', 'angularjs-dropdown-multiselect']);
 
    app.controller('SystemController', ['$scope', 'Data', function($scope, Data) {
 
@@ -16,6 +16,8 @@
     * *************************************************************/
    app.controller("TypeController", function($scope, Data) {
       $scope.results = null;
+      $scope.example1model = [];
+      $scope.example1data = [];
       this.selectType = function(_type) {
          if (! this.isSelected(_type)) {
             var idx = $scope.deselected_types.indexOf(_type);
@@ -100,7 +102,7 @@
          console.log($scope.start_date, $scope.end_date, $('#author_input').val(), $('#source_input').val());
       }
 
-      $scope.generateQueryResults = function() {
+      $scope.queryWithConditions = function() {
 
          var selected_groups = $("input[name='selected_center']:checked");
          if (selected_groups != null) {
@@ -109,12 +111,18 @@
                groups.push(selected_groups[idx].value);
             }
          }
-         console.log('query: ', $scope.query_words, 'author:', $scope.query_author, 'source: ', $scope.query_article_source, 'group: ', groups);
-         console.log('start: ', $scope.start_date, 'end: ', $scope.end_date);
          
+         $scope.query_categories = [];
+         for (var idx = 0; idx < $scope.example1model.length; idx++)
+            $scope.query_categories.push($scope.example1model[idx]['id']);
+
+         console.log('query: ', $scope.query_words, 'author:', $scope.query_author, 'source: ', $scope.query_categories, 'group: ', groups);
+         console.log('start: ', $scope.start_date, 'end: ', $scope.end_date);
+
+
          Data.setCurrentPage(1);
          // _query, _first_time, _author, _categories, _date_start, _date_end
-         Data.setQuerySetting($scope.query_words, false, $scope.query_author, $scope.query_article_source, $scope.start_date, $scope.end_date);
+         Data.setQuerySetting($scope.query_words, false, $scope.query_author, $scope.query_categories, $scope.start_date, $scope.end_date);
          Data.getApiData();
       };
       
@@ -137,11 +145,13 @@
                $('#source_input').html('');
                $('#author_input').html('');
                $scope.query_author = null;
-               $scope.query_article_source = null;
+               $scope.query_categories = null;
                $scope.info_sidebar = newVal;
                $scope.info_sidebar = Array.from($scope.info_sidebar);
                $scope.totalDisplayed = 5;
                initialTypes(newVal);
+               $scope.example1model = [];
+               $scope.example1data = getAllArticleType(newVal);
             }
          }
       });
@@ -269,15 +279,12 @@
                query_string += ('&author=' + encodeURIComponent(author));
 
             if (categories != null && (categories.length > 0)) {
-               // 不知輸入是否為string?
-               categories = categories.split(' ');
-               category_size = categories.length;
-
+               var category_size = categories.length;
                for (var idx = 0; idx < category_size; idx++)
                   if (idx < category_size - 1)
-                     query_string += ('categories=' + encodeURIComponent(categories[idx]) + '&');
+                     query_string += ('&categories=' + encodeURIComponent(categories[idx]) + '&');
                   else
-                     query_string += ('categories=' + encodeURIComponent(categories[idx]));
+                     query_string += ('&categories=' + encodeURIComponent(categories[idx]));
             }
 
             if ((date_start != null) && (date_end != null)) 
@@ -287,12 +294,10 @@
             if (is_first_query == null)
                return 
 
-            console.log(page_start);
-
             var temp_query_string = query_string;
             if (page_start != null) {
                var cluster_idx = (page_start - 1) * 10
-               temp_query_string = temp_query_string + ('&cluster_idx=' + encodeURIComponent(cluster_idx));
+               temp_query_string = temp_query_string + ('&cluster_idx=' + encodeURIComponent(cluster_idx)) + ('&batch_size=10');
             }
             console.log('http://lingtelli.com:5012/query/?' + temp_query_string);
 
@@ -305,7 +310,6 @@
             function successCallback(resp) {
                query_resp = resp.data;
                console.log('resp received, reindering...');
-               console.log(query_resp);
             };
          },
          getPageData: function() {
@@ -319,7 +323,6 @@
          },
          setCurrentPage: function(_page) {
             page_start = _page;
-            console.log('current page is set to: ', page_start);
          },
          getCurrentPage: function() {
             return page_start;
@@ -344,4 +347,20 @@ function msToDate(date_ms) {
    date = (date_obj.getDate()).toString();
    date = date.length > 1 ? date : '0'.concat(date); 
    return [year, month, date].join('');
+}
+
+function getAllArticleType(json_data) {
+   var temp_arr = [];
+   for (var idx = 0; idx < json_data.length; idx++) {
+      for (var jdx = 0; jdx < json_data[idx]['member'].length; jdx++)
+         temp_arr.push(json_data[idx]['member'][jdx]['subtype']);
+   }
+   
+   var category_arr = []
+   temp_arr = Array.from(new Set(temp_arr));
+   for (var idx = 0; idx < temp_arr.length; idx++) {
+      var obj = {id: temp_arr[idx], label: temp_arr[idx]}
+      category_arr.push(obj);
+   }
+   return category_arr;
 }

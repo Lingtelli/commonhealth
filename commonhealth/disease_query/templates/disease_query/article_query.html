@@ -7,6 +7,7 @@
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>  
 <script data-require="angular-ui-bootstrap@0.12.1" data-semver="0.12.1" src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.12.1.min.js"></script>
 <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/lodash/4.16.6/lodash.min.js"></script>
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,7 +16,8 @@
 <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
 
-<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css"/>
+<script type="text/javascript" src="/static/js/angularjs-dropdown-multiselect.js"></script>
 
 
 </head>
@@ -36,7 +38,7 @@
    {% verbatim %}
    <div class="row" style="margin-left: 5px">
       <div class="paragraph-container" ng-controller="PageController as pageCtrl">      
-         <div class="col-xs-10 col-sm-10 col-md-10" style="border: 1px solid #eeeeee; border-radius: 2px;"> 
+         <div class="col-xs-9 col-sm-9 col-md-9" style="border: 1px solid #eeeeee; border-radius: 2px;"> 
             <div class="container col-xs-12 col-sm-12 col-md-12">
                <div class="type-container" ng-controller="TypeController as typeCtrl">
                   <p class="text-muted" ng-show="results != null" style="margin-top: 5px;">共有{{ results.length }}筆結果</p>
@@ -46,7 +48,7 @@
                            <div class="panel-heading">
                               <h4 class="panel-title">
                                  <div>
-                                    <a data-toggle="collapse" data-parent="#accordion" href="#{{info.keyword}}" ng-click="lookupCluster(info.keyword, start_date)">群組-{{info.keyword}}：{{ info.member[0]['content'].slice(0,50)}}...</a>
+                                    <a data-toggle="collapse" data-parent="#accordion" href="#{{info.keyword}}">{{info.keyword}}：{{ info.member[0]['content'].slice(0,45)}} ...</a>
                                  </div>
                               </h4>
                            </div>
@@ -60,12 +62,16 @@
                                  {{ member.content.slice(0,100) }}
                                  <br>
                                  <br>
-                                 <div style="margin-right: 10%">出版日期：{{member['publish_date']}}，作者：{{member['author']}}，文章出處：{{member['categories']}}</div>
+                                 <div style="margin-right: 10%; font-weight: bold">
+                                    出版日期：<span style="font-weight: normal">{{member['publish_date']}}</span>
+                                    ，作者：<span style="font-weight: normal">{{member['author']}}</span>
+                                    ，文章出處：<span style="font-weight: normal">{{member['subtype']}}</span>
+                                 </div>
                                  <br>
                                  <a class="btn btn-primary" href="http://www.commonhealth.com.tw/article/article.action?nid={{member['url']}}" target="_blank" style="float: left">前往文章</a>
                                  <button class="btn btn-primary" type="button" ng-controller="ModalController as modalCtrl" ng-click="open(member)">完整段落</button>
-                                 <div style="margin-left: 50%">標籤：
-                                    <span ng-repeat="k in member['keywords']" style="margin: 0 auto">{{ k }} </span>
+                                 <div style="margin-left: 50%; font-weight: bold" >標籤：
+                                    <span ng-repeat="k in member.keywords" style="margin: 0 auto; font-weight: normal">{{ k }} </span>
                                  </div>
                               </div>
 
@@ -88,7 +94,7 @@
       </div>
       
       <div class="type-container" ng-controller="TypeController as typeCtrl">
-         <div ng-show="start_date != null" class="col-xs-2 col-sm-2 col-md-2 bg-info">
+         <div ng-show="start_date != null" class="col-xs-3 col-sm-3 col-md-3 bg-info">
             <button id="export_container" ng-click="exportJSON()">匯出JSON</button>
                         
             <h5>出版日期</h5>
@@ -97,8 +103,14 @@
             <div>
                <input id="author_input" type="text" ng-model="query_author" class="text-muted" placeholder="作者" style="width: 190px">
             </div>
+            <!--
             <div>
-               <input id="source_input" type="text" ng-model="query_article_source" class="text-muted" placeholder="文章出處" style="width: 190px">
+               <input id="source_input" type="text" ng-model="query_categories" class="text-muted" placeholder="文章分類" style="width: 190px">
+            </div>
+            -->
+            <div>
+               <h5>文章分類：</h5>
+               <div ng-dropdown-multiselect="" options="example1data" selected-model="example1model" translation-texts="checkAll=all"></div>
             </div>
 
             <p class="text-muted" ng-show="results.length >= 0" style="margin-top: 5px;">共有{{ info_sidebar.length }}個群組</p>
@@ -106,18 +118,22 @@
             <div ng-repeat="info in info_sidebar | limitTo:totalDisplayed">
                <a data-toggle="collapse" data-parent="#accordion" href="#{{info.keyword}}sidebar">群組: {{info.keyword}} ( {{info.size}} )</a>
                <div id="{{info.keyword}}sidebar" class="panel-collapse collapse">
-                  
-                  <div ng-repeat="(key, value) in info.each_center_count">
+                 
+                  <!--  有checkbox 版本
+                  <div ng-repeat="(key, value) in info.article_count">
                      <input value="{{info.keyword}}_{{key}}" class="panel-body" name="selected_center" type="checkbox">{{key}} ( {{value}} )</input>
                   </div>
-
+                  -->
+                  <div ng-repeat="(key, value) in info.article_count">
+                     <span>{{$index+1}}. {{key}} ( {{value}} )</span>
+                  </div>
 
                </div>
             </div>
             <button class="button" ng-click="loadMore()">看更多</button>
             <br>
             <hr>
-            <input type="submit" value="加入條件" ng-click="generateQueryResults()"></input>
+            <input type="submit" value="加入條件" ng-click="queryWithConditions()"></input>
          </div>
       </div>
       

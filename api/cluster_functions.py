@@ -3,6 +3,7 @@ import json
 import jieba
 import pandas as pd
 import numpy as np
+from itertools import count
 from collections import Counter, defaultdict
 from gensim.models import word2vec
 
@@ -108,14 +109,15 @@ def allFieldsQuery(q_dict):
         concepts = getConceptWords(top_keywords[:most_common_size])
                 
     for concept, words in concepts.items():
-        print(concept, 'size:', end='')
+        #print(concept, 'size:', end='')
         _query = '|'.join(words)
         temp_df = tdf[tdf.keywords_str.str.contains(_query, na=False)]
-        print(len(temp_df))
+        #print(len(temp_df))
         if len(temp_df) > 0:
             clusters.append(temp_df)
             keywords.append(concept)
     
+    return clusters, keywords
     # 目前是全部回傳，想辦法只要回傳部分，或是在convertJSON做
     cluster_idx = 0
     batch_size = 10
@@ -127,15 +129,32 @@ def allFieldsQuery(q_dict):
     return clusters[cluster_idx: cluster_idx + batch_size], keywords[cluster_idx: cluster_idx + batch_size]
 
 
-def convertJSON(df_list, keywords):
+def convertJSON(df_list, keywords, q_dict):
     clusters = []
     
-    for df, kw in zip(df_list, keywords):
+    idx_from = 0
+    idx_to = 10
+    
+    if 'cluster_idx' in q_dict.keys():
+        idx_from = int(q_dict['cluster_idx'])
+    if 'batch_size' in q_dict.keys():
+        idx_to = idx_from + int(q_dict['batch_size'])
+
+    print('select cluster from', idx_from, 'to', idx_to)
+
+    for idx, df, kw in zip(count(), df_list, keywords):
         cluster_obj = dict()
         cluster_obj['keyword'] = kw
         cluster_obj['size'] = len(df)
-        temp_df = df[['content', 'article_id', 'title', 'author', 'publish_date', 'url', 'subtype', 'keywords']]
+        if idx >= idx_from and idx < idx_to:
+            temp_df = df[['content', 'article_id', 'title', 'author', 'publish_date', 'url', 'subtype', 'keywords']]
+            temp_df['publish_date'] = temp_df['publish_date'].apply(lambda x: str(x)[:4] + '-' + str(x)[4:6] + '-' + str(x)[6:])
+        else:
+            temp_df = df[['title', 'subtype']]
+        
+        num_each_article = Counter(df['title'].tolist())
         cluster_obj['member'] = temp_df.to_dict(orient='records')
+        cluster_obj['article_count'] = num_each_article
         clusters.append(cluster_obj)
                                         
     return clusters

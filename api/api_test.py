@@ -234,7 +234,6 @@ def query():
         print('\nGOT REQUEST FROM WEBSITE')
         query_dict = request.args.to_dict()
         query_keys = query_dict.keys()
-        print('request:', request.args)
         if 'query' in request.args:
             query_dict['query'] = request.args.getlist('query')
         if 'keywords' in request.args:
@@ -252,7 +251,7 @@ def query():
     print('QUERY DICT:', query_dict)
   
     df, keywords = allFieldsQuery(query_dict)
-    clusters_json = convertJSON(df, keywords)
+    clusters_json = convertJSON(df, keywords, query_dict)
     return json.dumps(clusters_json, ensure_ascii=False)
 
 if __name__ == '__main__':
