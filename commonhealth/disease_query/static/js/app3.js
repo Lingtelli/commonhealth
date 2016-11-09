@@ -345,11 +345,10 @@
          getApiData: function () {
             if (is_first_query == null)
                return 
-            console.log(page_start);
             var temp_query_string = query_string;
             if (page_start != null)
                temp_query_string = temp_query_string + ('&page_start=' + encodeURIComponent(page_start));
-            console.log(temp_query_string);
+            console.log('http://lingtelli.com:5012/commonhealth_api/?' + temp_query_string);
             $http({
                method: 'POST',
                url: 'http://lingtelli.com:5012/commonhealth_api/?' + temp_query_string,
@@ -359,7 +358,6 @@
             function successCallback(resp) {
                query_resp = resp.data;
                console.log('resp received, reindering...');
-               console.log(query_resp);
             };
          },
          /*
@@ -391,7 +389,6 @@
          },
          setCurrentPage: function(_page) {
             page_start = _page;
-            console.log('current page is set to: ', page_start);
          },
          getCurrentPage: function() {
             return page_start;

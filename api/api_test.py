@@ -16,7 +16,7 @@ api = Api(app)
 CORS(app)
 
 VALID_PARAMS = ['query', 'clusterid', 'center', 'author', 'date_start', 'date_end', 'categories', 'groups', 'page_start']
-VALID_PARAMS_NEW = ['query', 'keywords', 'author', 'publish_date', 'categories', 'batch_size', 'cluster_idx', 'most_common_size']
+VALID_PARAMS_NEW = ['query', 'keywords', 'author', 'publish_date', 'categories', 'batch_size', 'cluster_idx', 'return_cluster_size']
 
 
 output_filename = './cluster_result0.json'
@@ -100,16 +100,17 @@ def getDetail():
 
 @app.route('/query/', methods=['POST','GET'])
 def query():
-    if request.json:                        # request from website
+    if request.json:
         print('\nGOT REQUEST FROM CURL')
         query_dict = request.json
         query_keys = query_dict.keys()
-        query_words = query_dict['query']
 
-    else:                                   # request from curl
+    else:
         print('\nGOT REQUEST FROM WEBSITE')
         query_dict = request.args.to_dict()
         query_keys = query_dict.keys()
+        query_dict['batch_size'] = 10
+        query_dict['return_cluster_size'] = 50
         if 'query' in request.args:
             query_dict['query'] = request.args.getlist('query')
         if 'keywords' in request.args:

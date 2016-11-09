@@ -86,8 +86,14 @@ def allFieldsQuery(q_dict):
 
     query_fields = q_dict.keys()
 
-    most_common_size = 50 if 'most_common_size' not in query_fields else q_dict['most_common_size']
-    top_keywords = [w[0] for w in Counter(keyword_contain_query).most_common(most_common_size)]
+    top_candidate_words = Counter(keyword_contain_query).most_common()
+    return_cluster_size = len(top_candidate_words) if 'return_cluster_size' not in query_fields else q_dict['return_cluster_size']
+    top_keywords = [w[0] for w in top_candidate_words[: return_cluster_size]]
+    if 'return_cluster_size' not in query_fields:
+        print('query for all clusters. (', return_cluster_size, ')')
+    else:
+        print('query for', return_cluster_size, 'clusters.')
+
 
     if 'author' in query_fields:
         tdf = tdf[(tdf.author.str.contains(q_dict['author'], na=False))]
@@ -107,7 +113,7 @@ def allFieldsQuery(q_dict):
     if 'keywords' in query_fields:
         concepts = getConceptWords(q_dict['keywords'])
     else:
-        concepts = getConceptWords(top_keywords[:most_common_size])
+        concepts = getConceptWords(top_keywords)
                 
     for concept, words in concepts.items():
         #print(concept, 'size:', end='')
@@ -119,20 +125,11 @@ def allFieldsQuery(q_dict):
             keywords.append(concept)
     
     return clusters, keywords
-    # 目前是全部回傳，想辦法只要回傳部分，或是在convertJSON做
-    cluster_idx = 0
-    batch_size = 10
-    if 'cluster_idx' in query_fields:
-        cluster_idx = int(q_dict['cluster_idx'])
-    if 'batch_size' in query_fields:
-        batch_size = int(q_dict['batch_size'])
-
-    return clusters[cluster_idx: cluster_idx + batch_size], keywords[cluster_idx: cluster_idx + batch_size]
 
 def rankClusters(clusters, keywords, words):
     score_dict = dict()
     words = '|'.join(words)
-    # compare keywords_str field first
+
     for idx, c in enumerate(clusters):
         # 可能需要先只留下同樣的文章？
         num_rows_keywords_contain_words = c.keywords_str.str.contains(words, na=False).sum()
@@ -141,30 +138,30 @@ def rankClusters(clusters, keywords, words):
         score = num_rows_keywords_contain_words * 100 + 2 * num_rows_content_contain_words
         score_dict[idx] = score
         #print(keywords[idx], '->', score)
-        # sort paragraph order
     
     ranking = sorted(score_dict.items(), key=operator.itemgetter(1), reverse=True)
     ranking = [x[0] for x in ranking]
     
-    sorted_keywords  = [keywords[idx] for idx in ranking]
-    sorted_clusters  = [clusters[idx] for idx in ranking]
+    sorted_keywords = [keywords[idx] for idx in ranking]
+    sorted_clusters = [clusters[idx] for idx in ranking]
     
-    #print(sorted_keywords)
     return sorted_clusters, sorted_keywords
 
 
+# batch_size 表示要完整顯示的群組，若沒有給，表示是由Curl request，應回傳所有群組的完整資料
 def convertJSON(df_list, keywords, q_dict):
     clusters = []
     
     idx_from = 0
-    idx_to = 10
+    idx_to = len(df_list)
     
     if 'cluster_idx' in q_dict.keys():
         idx_from = int(q_dict['cluster_idx'])
     if 'batch_size' in q_dict.keys():
-        idx_to = idx_from + int(q_dict['batch_size'])
-
-    print('select cluster from', idx_from, 'to', idx_to)
+        idx_to = idx_from + q_dict['batch_size']
+        print('detail data from cluster', idx_from, 'to', idx_to)
+    else:
+        print('ALL DATA ARE IN DETAIL')
 
     for idx, df, kw in zip(count(), df_list, keywords):
         cluster_obj = dict()
