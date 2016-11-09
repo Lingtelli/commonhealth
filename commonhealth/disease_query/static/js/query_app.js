@@ -359,7 +359,7 @@ function getAllArticleType(json_data) {
    var category_arr = []
    temp_arr = Array.from(new Set(temp_arr));
    for (var idx = 0; idx < temp_arr.length; idx++) {
-      var obj = {id: temp_arr[idx], label: temp_arr[idx]}
+      var obj = {id: temp_arr[idx], label: temp_arr[idx]};
       category_arr.push(obj);
    }
    return category_arr;

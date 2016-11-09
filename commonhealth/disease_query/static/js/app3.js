@@ -1,5 +1,5 @@
 (function() {
-   var app = angular.module('query-system', ['ui.bootstrap']);
+   var app = angular.module('query-system', ['ui.bootstrap', 'angularjs-dropdown-multiselect']);
 
    app.controller('SystemController', ['$scope', 'Data', function($scope, Data) {
 
@@ -23,6 +23,8 @@
     * *************************************************************/
    app.controller("TypeController", function($scope, Data) {
       $scope.results = null;
+      $scope.example1model = [];
+      $scope.example1data = [];
       this.selectType = function(_type) {
          if (! this.isSelected(_type)) {
             var idx = $scope.deselected_types.indexOf(_type);
@@ -132,14 +134,20 @@
             selected_clusterid = null; 
          }
          */
-         console.log('query: ', $scope.query_words, 'author:', $scope.query_author, 'source: ', $scope.query_article_source, 'group: ', groups);
+
+         $scope.query_categories = [];
+         for (var idx = 0; idx < $scope.example1model.length; idx++)
+            $scope.query_categories.push($scope.example1model[idx]['id']);
+
+         console.log($scope.query_categories);
+
+         console.log('query: ', $scope.query_words, 'author:', $scope.query_author, 'categories: ', $scope.query_categories, 'group: ', groups);
          console.log('start: ', $scope.start_date, 'end: ', $scope.end_date);
          
          Data.setCurrentPage(1);
-         // words, first_time, author, source, date_start, date_end, groups
-         Data.setQuerySetting($scope.query_words, false, $scope.query_author, $scope.query_article_source, $scope.start_date, $scope.end_date, groups);
-         Data.getQuerySetting();
-         //Data.setInputDisease($scope.query_words, false, $scope.query_author, $scope.query_article_source, selected_clusterid, selected_center, $scope.start_date, $scope.end_date, groups);
+         // words, first_time, author, categories, date_start, date_end, groups
+         Data.setQuerySetting($scope.query_words, false, $scope.query_author, $scope.query_categories, $scope.start_date, $scope.end_date, groups);
+         //Data.getQuerySetting();
          Data.getApiData();
       };
       
@@ -167,6 +175,8 @@
                $scope.info_sidebar = Array.from($scope.info_sidebar);
                $scope.totalDisplayed = 5;
                initialTypes(newVal);
+               $scope.example1model = [];
+               $scope.example1data = getAllArticleType(newVal);
             }
          }
       });
@@ -257,7 +267,7 @@
       var detail = [];
 
       var words = [];
-      var source = null;
+      var categories = [];
       var author = null;
       var date_start = null;
       var date_end = null;
@@ -272,12 +282,12 @@
          getInputDisease: function() {
             return query_resp;
          },
-         setQuerySetting: function(_words, _first_time=false, _author=null, _source=null, _date_start=null, _date_end=null, _groups=null) {
+         setQuerySetting: function(_words, _first_time=false, _author=null, _categories=null, _date_start=null, _date_end=null, _groups=null) {
             
             query_string = '';
             words = _words;
             is_first_query = _first_time;
-            source = _source;
+            categories = _categories;
             author = _author;
             date_start = _date_start;
             date_end = _date_end;
@@ -299,18 +309,33 @@
             }else {
                query_string += ('query=' + encodeURIComponent(' '));
             }
+
             if ((author != null) && (author.length > 0) ) 
                query_string += ('&author=' + encodeURIComponent(author));
-            if (source != null && (source.length > 0)) 
-               query_string += ('&source=' + encodeURIComponent(source));
+
+
+            if (categories != null && (categories.length > 0)) {
+               var category_size = categories.length;
+               for (var idx = 0; idx < category_size; idx++)
+                  if (idx < category_size - 1)
+                     query_string += ('&categories=' + encodeURIComponent(categories[idx]) + '&');
+                  else
+                     query_string += ('&categories=' + encodeURIComponent(categories[idx]));
+            }
+
+
             //if (center != null) 
             //   query_string += ('&center=' + encodeURIComponent(center));
+            
             if (date_start != null) 
                query_string += ('&date_start=' + encodeURIComponent(date_start));
+
             if (date_end != null)
                query_string += ('&date_end=' + encodeURIComponent(date_end));
+
             //if (clusterid != null)
             //   query_string += ('&clusterid=' + encodeURIComponent(clusterid));
+
             if (groups != null) {
                group_size = groups.length;
                for (var idx = 0; idx < group_size; idx++)
@@ -391,4 +416,21 @@ function msToDate(date_ms) {
    date = (date_obj.getDate()).toString();
    date = date.length > 1 ? date : '0'.concat(date); 
    return [year, month, date].join('');
+}
+
+function getAllArticleType(json_data) {
+   var temp_arr = [];
+   for (var idx = 0; idx < json_data.length; idx++) {
+      for (var jdx = 0; jdx < json_data[idx]['member'].length; jdx++)
+         temp_arr.push(json_data[idx]['member'][jdx]['source']);
+   }
+
+   var category_arr = []
+   temp_arr = Array.from(new Set(temp_arr));
+   for (var idx = 0; idx < temp_arr.length; idx++) {
+      var obj = {id: temp_arr[idx], label: temp_arr[idx]};
+      category_arr.push(obj);
+
+   }
+   return category_arr;
 }
