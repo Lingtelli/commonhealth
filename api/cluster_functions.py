@@ -79,7 +79,6 @@ def allFieldsQuery(q_dict):
     df_dataset['keywords_str'] = df_dataset['keywords'].apply(lambda x: ' '.join(x))
     df_dataset['comment_no_punc'] = df_dataset['content'].apply(removePunctuation)
 
-    # for word in q_dict['query']
     tdf = df_dataset
     for word in q_dict['query']:
         tdf = tdf[(tdf.comment_no_punc.str.contains(word, na=False)) | (tdf.keywords_str.str.contains(word, na=False))]
@@ -171,6 +170,17 @@ def convertJSON(df_list, keywords, q_dict):
         print('detail data from cluster', idx_from, 'to', idx_to)
     else:
         print('ALL DATA ARE IN DETAIL')
+
+    # 踢掉除了關鍵字不一樣，其他內容完全一樣的群
+    #########################################################################
+    remove_list = []
+    for idx, df in enumerate(df_list):
+        if idx + 1 != len(keywords):
+            if df[['content']].equals(df_list[idx+1][['content']]):
+                remove_list.append(idx+1)
+    df_list = [df for idx, df in enumerate(df_list) if idx not in remove_list]
+    keywords = [k for idx, k in enumerate(keywords) if idx not in remove_list]
+    #########################################################################
 
     for idx, df, kw in zip(count(), df_list, keywords):
         cluster_obj = dict()
