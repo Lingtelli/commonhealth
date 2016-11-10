@@ -79,9 +79,15 @@ def allFieldsQuery(q_dict):
     df_dataset['keywords_str'] = df_dataset['keywords'].apply(lambda x: ' '.join(x))
     df_dataset['comment_no_punc'] = df_dataset['content'].apply(removePunctuation)
 
+    # for word in q_dict['query']
+    tdf = df_dataset
+    for word in q_dict['query']:
+        tdf = tdf[(tdf.comment_no_punc.str.contains(word, na=False)) | (tdf.keywords_str.str.contains(word, na=False))]
+
     query = '|'.join(q_dict['query'])
-    tdf = df_dataset[(df_dataset.comment_no_punc.str.contains(query, na=False)) | (df_dataset.keywords_str.str.contains(query, na=False))]
+    #tdf = df_dataset[(df_dataset.comment_no_punc.str.contains(query, na=False)) | (df_dataset.keywords_str.str.contains(query, na=False))]
         
+    # 在目前的tdf的各篇段落裡的所有關鍵字，不包含query
     keyword_contain_query = [k for kws in tdf.keywords.str for k in kws if (type(k) is not float) and (k not in query)]
 
     query_fields = q_dict.keys()
@@ -89,11 +95,11 @@ def allFieldsQuery(q_dict):
     top_candidate_words = Counter(keyword_contain_query).most_common()
     return_cluster_size = len(top_candidate_words) if 'return_cluster_size' not in query_fields else q_dict['return_cluster_size']
     top_keywords = [w[0] for w in top_candidate_words[: return_cluster_size]]
+
     if 'return_cluster_size' not in query_fields:
         print('query for all clusters. (', return_cluster_size, ')')
     else:
         print('query for', return_cluster_size, 'clusters.')
-
 
     if 'author' in query_fields:
         tdf = tdf[(tdf.author.str.contains(q_dict['author'], na=False))]
@@ -126,17 +132,20 @@ def allFieldsQuery(q_dict):
     
     return clusters, keywords
 
-def rankClusters(clusters, keywords, words):
+def rankClusters(clusters, keywords, query_words):
     score_dict = dict()
-    words = '|'.join(words)
+    query = '|'.join(query_words)
 
+    # 如果是words出現在同一文章應該要最高
     for idx, c in enumerate(clusters):
         # 可能需要先只留下同樣的文章？
-        num_rows_keywords_contain_words = c.keywords_str.str.contains(words, na=False).sum()
-        num_rows_content_contain_words = c.comment_no_punc.str.contains(words, na=False).sum()
+        num_rows_keywords_contain_words = c.keywords_str.str.contains(query, na=False).sum()
+        num_rows_content_contain_words = c.comment_no_punc.str.contains(query, na=False).sum()
          
         score = num_rows_keywords_contain_words * 100 + 2 * num_rows_content_contain_words
         score_dict[idx] = score
+        c.sort_values(by='article_id', inplace=True)
+        c.drop_duplicates(inplace=True)
         #print(keywords[idx], '->', score)
     
     ranking = sorted(score_dict.items(), key=operator.itemgetter(1), reverse=True)
