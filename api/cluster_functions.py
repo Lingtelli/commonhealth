@@ -31,6 +31,7 @@ def extractInfo(c):
 def cleanKeywords(keywords):
     if (type(keywords) == float) or (len(keywords) > 0 and type(keywords[0]) is float):
         return []
+    keywords = [x for x in keywords if str(x) != 'nan']
     return keywords
 
 def makeTitle(data):
@@ -105,7 +106,7 @@ def allFieldsQuery(q_dict):
         
     if 'categories' in query_fields:
         query = '|'.join(q_dict['categories'])
-        tdf = tdf[(tdf.subtype.str.contains(query, na=False))]
+        tdf = tdf[(tdf.category.str.contains(query, na=False))]
             
     if 'publish_date' in query_fields:
         start = ''.join(q_dict['publish_date'][0].split('-'))
@@ -187,10 +188,10 @@ def convertJSON(df_list, keywords, q_dict):
         cluster_obj['keyword'] = kw
         cluster_obj['size'] = len(df)
         if idx >= idx_from and idx < idx_to:
-            temp_df = df[['content', 'article_id', 'title', 'author', 'publish_date', 'url', 'subtype', 'keywords']]
+            temp_df = df[['content', 'article_id', 'title', 'author', 'publish_date', 'url', 'category', 'keywords']]
             temp_df['publish_date'] = temp_df['publish_date'].apply(lambda x: str(x)[:4] + '-' + str(x)[4:6] + '-' + str(x)[6:])
         else:
-            temp_df = df[['title', 'subtype']]
+            temp_df = df[['title', 'category']]
         
         num_each_article = Counter(df['title'].tolist())
         cluster_obj['member'] = temp_df.to_dict(orient='records')

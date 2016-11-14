@@ -62,7 +62,7 @@
                                  {{ member.content.slice(0,100) }}
                                  <br>
                                  <br>
-                                 <div style="margin-right: 10%">出版日期：{{member['publish_date']}}，作者：{{member['author']}}，文章出處：{{member['category']}}</div>
+                                 <div style="margin-right: 10%">出版日期：{{member['publish_date']}}，作者：{{member['author']}}，文章分類：{{member['category']}}</div>
                                  <br>
                                  <a class="btn btn-primary" href="http://www.commonhealth.com.tw/article/article.action?nid={{member['url']}}" target="_blank" style="float: left">前往文章</a>
                                  <button class="btn btn-primary" type="button" ng-controller="ModalController as modalCtrl" ng-click="open(member)">完整段落</button>

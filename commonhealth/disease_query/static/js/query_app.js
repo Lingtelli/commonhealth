@@ -353,7 +353,7 @@ function getAllArticleType(json_data) {
    var temp_arr = [];
    for (var idx = 0; idx < json_data.length; idx++) {
       for (var jdx = 0; jdx < json_data[idx]['member'].length; jdx++)
-         temp_arr.push(json_data[idx]['member'][jdx]['subtype']);
+         temp_arr.push(json_data[idx]['member'][jdx]['category']);
    }
    
    var category_arr = []
