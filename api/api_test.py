@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import sys, os, inspect
+import requests
 from cluster_functions import *
 from api_functions import * 
 from flask import Flask, request, send_from_directory, g
@@ -46,7 +47,7 @@ def commonhealth_api():
 
     print('QUERY DICT:', query_dict)
     print(query_words)
-    data = open('test_big.json', encoding='utf-8')
+    data = open('query_data_for_v1.json', encoding='utf-8')
     #data = open('cluster_result0.json', encoding='utf-8') 
     cluster_list = json.load(data)
 
@@ -131,6 +132,21 @@ def query():
     sorted_clusters, sorted_keywords = rankClusters(clusters, keywords, query_dict['query'])
     clusters_json = convertJSON(sorted_clusters, sorted_keywords, query_dict)
     return json.dumps(clusters_json, ensure_ascii=False)
+
+
+@app.route('/getKeywordAssoc/', methods=['POST','GET'])
+def getKeywordAssoc():
+    query_dict = request.json
+    print('got:', query_dict)
+    assoc_resp = requests.post('http://192.168.10.108:3005/getKeywordAssoc?lang=sim', data=query_dict)
+    #print(assoc_resp.json())
+    return json.dumps(assoc_resp.json(), ensure_ascii=False)
+    return 'ooo'
+
+
+
+
+
 
 if __name__ == '__main__':
     app.run(host='192.168.10.116', port=5012, debug=True)

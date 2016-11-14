@@ -44,7 +44,7 @@ def isQualified(member, center, author, date_start, date_end, categories):
         return False
     if ((author is not None) and (author != member['author'])):
         return False
-    if ((categories is not None and len(categories) > 0)  and (member['source'] not in categories)):
+    if ((categories is not None and len(categories) > 0)  and (member['category'] not in categories)):
         return False
      
     date = ''.join(member['publish_date'].split('-'))
@@ -121,17 +121,17 @@ def trimClusters(clusters, page_start):
             for member in cluster['member']:
                 del member['author']
                 del member['content']
-                del member['source']
+                del member['category']
                 del member['parapraph_tags']
                 del member['article_id']
-                del member['article_tag']
+                #del member['article_tag']
                 del member['url']
                 del member['_centers']
         else:
             for member in cluster['member']:
                 del member['article_id']
                 del member['parapraph_tags']
-                del member['article_tag']
+                #del member['article_tag']
             
     return clusters
 
