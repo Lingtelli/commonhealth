@@ -9,7 +9,7 @@ from collections import Counter, defaultdict
 from gensim.models import word2vec
 
 def extractInfo(c):
-    searchObj = re.search( r'([a-z0-9]+-)+[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]+(.*)$', c['comment_no_punc'], re.M|re.I)
+    searchObj = re.search( r'[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}(.*)$', c['comment_no_punc'], re.M|re.I)
     if searchObj == None:
         print('NO PATTERN MATCHED IN COMMENT %s' % c['comment_no_punc'])
         c['article_id'] = 'NO_DATA'
@@ -20,9 +20,9 @@ def extractInfo(c):
         c['tags'] = c['comment_no_punc'][searchObj.start(): searchObj.end()].split(' ', 1)[1]
         c['comment_pure'] = c['comment_no_punc'][: searchObj.start()]
 
-    searchObj2 = re.search( r'([a-z0-9]+-)+[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]+(.*)$', c['comment'], re.M|re.I)
-    if searchObj2 is not None:
-        c['content'] = c['comment'][: searchObj.start()]
+    search_content = re.search( r'[a-z0-9]{8}-+[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}(.*)$', c['comment'], re.M|re.I)
+    if search_content is not None:
+        c['content'] = c['comment'][: search_content.start()]
     else:
         c['content'] = c['comment']
     return c
